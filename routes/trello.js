@@ -8,6 +8,10 @@ var express = require('express'),
     todoRe = /^\s*\(([\?0-9]+)\)/,
     doingRe = /\[(\d+)\]\s*$/;
 
+router.get('/', function(req, res, next) {
+    res.send('ok');
+});
+
 // update webhooks
 router.get('/updateWebhooks', function(req, res, next) {
     trello.getBoards('me').then(function(boards) {
