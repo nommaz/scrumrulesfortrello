@@ -9,7 +9,7 @@ var express = require('express'),
     doingRe = /\[(\d+)\]\s*$/;
 
 // update webhooks
-router.get('/', function(req, res, next) {
+router.get('/updateWebhooks', function(req, res, next) {
     trello.getBoards('me').then(function(boards) {
         var boardList = _.compact(_.map(boards, function(board) {
             return {
@@ -30,14 +30,18 @@ router.get('/', function(req, res, next) {
 
 // listen for webhooks
 router.post('/', function(req, res, next) {
-    var body = req.body,
-        action = body.action,
+    var action = req.body.action,
         actionType = action.type,
         actionData = action.data,
         match;
 
+    // Do not process own actions
+    if (trello.me && trello.me.id === action.idMemberCreator) {
+        return;
+    }
+
     if (actionType === 'updateCard' && actionData.listAfter) {
-        onCardMove(body, action);
+        onCardMove(action);
     } else if (actionType === 'moveCardFromBoard') {
         // TODO
         console.log('moveCardFromBoard');
@@ -50,10 +54,9 @@ router.post('/', function(req, res, next) {
 /**
  * Listener to card move action
  *
- * @param {Object} body - entire message
  * @param {Object} action - performed action
  */
-function onCardMove(body, action) {
+function onCardMove(action) {
     var actionData = action.data,
         card = actionData.card,
         shortLink = card.shortLink,
