@@ -41,6 +41,7 @@ router.post('/', function(req, res, next) {
 
     // Do not process own actions
     if (trello.me && trello.me.id === action.idMemberCreator) {
+        res.send('ok');
         return;
     }
 
