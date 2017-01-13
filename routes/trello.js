@@ -1,12 +1,14 @@
 /* jshint esversion: 6 */
 var express = require('express'),
     _ = require('lodash'),
+    cache = require('memory-cache'),
     router = express.Router(),
     trello = require('../utils/trello'),
     config = require('../config'),
     logger = console,
     todoRe = /^\s*\(([\?0-9]+)\)/,
-    doingRe = /\[(\d+)\]\s*$/;
+    doingRe = /\[(\d+)\]\s*$/,
+    CACHE_TIME = 60000;
 
 router.get('/', function(req, res, next) {
     res.send('ok');
@@ -37,24 +39,52 @@ router.post('/', function(req, res, next) {
     var action = req.body.action,
         actionType = action.type,
         actionData = action.data,
-        match;
+        match,
+        cachedAction;
 
     // Do not process own actions
     if (trello.me && trello.me.id === action.idMemberCreator) {
+        logger.log('skip own action');
         res.send('ok');
         return;
     }
 
     if (actionType === 'updateCard' && actionData.listAfter) {
+        logger.log('onCardMove');
         onCardMove(action);
     } else if (actionType === 'moveCardFromBoard') {
-        // TODO
-        console.log('moveCardFromBoard');
-        console.log(body);
+        logger.log('moveCardFromBoard');
+
+        action = cache.get(actionData.card.id) || action;
+        action.data.listBefore = actionData.list;
+        action.data.boardSource = actionData.board;
+
+        onCardMoveBetweenBoards(action);
+    } else if (actionType === 'moveCardToBoard') {
+        logger.log('moveCardToBoard');
+
+        action = cache.get(actionData.card.id) || action;
+        action.data.listAfter = actionData.list;
+
+        onCardMoveBetweenBoards(action);
     }
 
     res.send('ok');
 });
+
+function onCardMoveBetweenBoards(action) {
+    var cardId = action.data.card.id;
+
+    if (action.data.listAfter && action.data.listBefore) {
+        logger.log('processing cached item', action);
+
+        cache.del(cardId);
+        onCardMove(action);
+    } else {
+        logger.log('put action to cache');
+        cache.put(cardId, action, CACHE_TIME);
+    }
+}
 
 /**
  * Listener to card move action
@@ -64,8 +94,14 @@ router.post('/', function(req, res, next) {
 function onCardMove(action) {
     var actionData = action.data,
         card = actionData.card,
-        shortLink = card.shortLink,
-        match;
+        cardId = card.id,
+        username = action.memberCreator.username,
+        match,
+        updateFields = { idList: actionData.listBefore.id };
+
+    if (actionData.boardSource) {
+        updateFields.idBoard = actionData.boardSource.id;
+    }
 
     // watch cards moved TO list name which contains the string "To Do"
     if (actionData.listAfter.name.includes('To Do')) {
@@ -74,12 +110,14 @@ function onCardMove(action) {
         // if card subject doesnt start with '(N)' where N is either the character '?' or a number less than 80
         // move it back to the originating list
         if (!match || match[1] !== '?' && parseInt(match[1], 10) < 80) {
-            // moving card back to list
-            trello.updateCardList(shortLink, actionData.listBefore.id)
+            logger.log('moving card back from TODO list');
+
+            trello.updateCardFields(cardId, updateFields)
                 .then(function() {
+                    trello.updateCard(cardId, 'pos', 0.1);
                     trello.addCommentToCard(
-                            shortLink,
-                            `@${ action.memberCreator.username } Invalid move operation, missing point estimate.`);
+                            cardId,
+                            `@${ username } Invalid move operation, missing point estimate.`);
                 });
 
             return;
@@ -92,11 +130,14 @@ function onCardMove(action) {
 
         // if card subject doesnt end with '[N]' where N is a number, move it back to the originating list
         if (!match || parseInt(match[1], 10) < Number.MIN_VALUE) {
-            trello.updateCardList(shortLink, actionData.listBefore.id)
+            logger.log('moving card back to Doing list');
+
+            trello.updateCardFields(cardId, updateFields)
                 .then(function() {
+                    trello.updateCard(cardId, 'pos', 0.1);
                     trello.addCommentToCard(
-                            shortLink,
-                            `@${ action.memberCreator.username } Invalid move operation, missing consumed points.`);
+                            cardId,
+                            `@${ username } Invalid move operation, missing consumed points.`);
                 });
 
             return;

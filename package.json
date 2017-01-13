@@ -6,14 +6,17 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "bluebird": "^3.4.7",
     "body-parser": "~1.15.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
     "express": "~4.14.0",
+    "install": "^0.8.4",
     "jade": "~1.11.0",
     "lodash": "^4.17.4",
+    "memory-cache": "^0.1.6",
     "morgan": "~1.7.0",
+    "npm": "^4.0.5",
+    "restler": "^3.4.0",
     "serve-favicon": "~2.3.0",
     "stylus": "0.54.5",
     "trello": "^0.7.0"
