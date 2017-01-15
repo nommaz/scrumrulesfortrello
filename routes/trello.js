@@ -109,7 +109,7 @@ function onCardMove(action) {
 
         // if card subject doesnt start with '(N)' where N is either the character '?' or a number less than 80
         // move it back to the originating list
-        if (!match || match[1] !== '?' && parseInt(match[1], 10) < 80) {
+        if (!match || match[1] !== '?' && parseInt(match[1], 10) > 80) {
             logger.log('moving card back from TODO list');
 
             trello.updateCardFields(cardId, updateFields)
@@ -118,6 +118,9 @@ function onCardMove(action) {
                     trello.addCommentToCard(
                             cardId,
                             `@${ username } Invalid move operation, missing point estimate.`);
+                })
+                .catch(function(reason) {
+                    logger.error('Failed to move card from TODO list', reason);
                 });
 
             return;
@@ -138,6 +141,9 @@ function onCardMove(action) {
                     trello.addCommentToCard(
                             cardId,
                             `@${ username } Invalid move operation, missing consumed points.`);
+                })
+                .catch(function(reason) {
+                    logger.error('Failed to move card from TODO list', reason);
                 });
 
             return;
