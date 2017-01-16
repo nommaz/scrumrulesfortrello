@@ -10,7 +10,7 @@ clone the code and run in project folder
 npm install
 ```
 
-you will need to create trello account which will be used for bot after that you'll need to get oauth tokens, create file `config.js` in project directory with the following content
+you will need to create trello account which will be used for bot, get oauth tokens and create file `config.js` in project directory with the following content
 ```js
 module.exports = {                                                                 
     appKey: '', // The key grabbed from this page https://trello.com/app-key                                    
