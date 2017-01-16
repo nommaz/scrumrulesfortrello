@@ -5,7 +5,7 @@ Ensure trello cards are assigned points by undo'ing invalid card moves
 NodeJS 4+
 
 # setup
-clone the code and run
+clone the code and run in project folder
 ```
 npm install
 ```
