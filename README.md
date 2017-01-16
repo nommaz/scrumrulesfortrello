@@ -1,6 +1,9 @@
 # scrumrulesfortrello
 Ensure trello cards are assigned points by undo'ing invalid card moves
 
+# requirements
+NodeJS 4+
+
 # setup
 clone the code and run
 ```
@@ -21,7 +24,7 @@ now you can start server with
 npm start
 ```
 
-On the server [pm2](https://github.com/Unitech/pm2) is can be use to manage the server. Basic configuration file can be look like this
+On the server [pm2](https://github.com/Unitech/pm2) can be used to manage the server. Basic configuration file may look like this
 ```js
 {
     "name": "scrumrulesfortrello",
