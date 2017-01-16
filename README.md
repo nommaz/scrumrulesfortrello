@@ -21,7 +21,7 @@ now you can start server with
 npm start
 ```
 
-On the server [pm2](https://github.com/Unitech/pm2) is can be use to start the server. Basic configuration file can be look like this
+On the server [pm2](https://github.com/Unitech/pm2) is can be use to manage the server. Basic configuration file can be look like this
 ```js
 {
     "name": "scrumrulesfortrello",
