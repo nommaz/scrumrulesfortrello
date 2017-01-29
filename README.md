@@ -32,7 +32,7 @@ On the server [pm2](https://github.com/Unitech/pm2) can be used to manage the se
 }
 ```
 
-after we save it as `app.json` we can start server `sudo pm2 start app.json` or restart it with `sudo pm2 stop app.json`
+after we save it as `app.json` we can start server `pm2 start app.json` or restart it with `pm2 stop app.json`
 
 
 After adding bot to new boards you'll need to add webhooks to these boards. This can be done by openning this page in your browser `http://YOUR_HOST/trello/updateWebhooks`
