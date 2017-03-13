@@ -1,3 +1,4 @@
+/* jshint esversion: 6 */
 var Trello = new require("trello"),
     _ = require('lodash'),
     rest = require('restler');
@@ -29,10 +30,14 @@ function makeRequest(fn, uri, options, callback) {
     }
 }
 
-trello.updateCardFields = function (cardId, fields, callback) {
+trello.updateCardFields = function(cardId, fields, callback) {
     var query = this.createQuery();
 
     return makeRequest(rest.put, this.uri + '/1/cards/' + cardId + '/', { query: query, data: fields }, callback);
+};
+
+trello.generateCardSlackLink = function(card) {
+    return `<https://trello.com/c/${ card.shortLink }|${ card.name }>`;
 };
 
 /**

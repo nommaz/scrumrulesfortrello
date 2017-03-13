@@ -1,10 +1,12 @@
 /* jshint esversion: 6 */
 var express = require('express'),
     _ = require('lodash'),
+    restler = require('restler'),
     cache = require('memory-cache'),
     router = express.Router(),
     trello = require('../utils/trello'),
     config = require('../config'),
+    slackWebhookUrl = config.slackWebhookUrl,
     logger = console,
     todoRe = /^\s*\(([\?\.0-9]+)\)/,
     doingRe = /\[(-?[\.0-9]+)\]\s*$/,
@@ -89,6 +91,12 @@ function onCardCreate(action) {
 
             return label || trello.addLabelOnBoard(board.id, '', null);
         }).then(function(label) {
+            if (slackWebhookUrl) {
+                restler.postJson(slackWebhookUrl, {
+                    text: `Card ${ trello.generateCardSlackLink(card) } created in non-backlog list`
+                });
+            }
+
             return trello.addLabelToCard(card.id, label.id);
         });
     }
