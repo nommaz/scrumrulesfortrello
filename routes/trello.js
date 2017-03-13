@@ -79,16 +79,19 @@ router.post('/', function(req, res, next) {
 });
 
 function onCardCreate(action) {
-    var cardId = action.data.card.id;
-    var cardList = action.data.card.list;
-    logger.log(cardList);
-/*
-    if (action.data.list && action.data.list.name.includes("Backlog") {
- 		trello.addCommentToCard(
-            cardId,
-            `@vedatnommaz Warning: card was not created in Backlog.`);
-        }
-*/
+    var board = action.data.board;
+    var list = action.data.list;
+    var card = action.data.card;
+
+    if (!list.name.includes("Backlog")) {
+        trello.getLabelsForBoard(board.id).then(function(labels) {
+            var label = _.find(labels, { color: null });
+
+            return label || trello.addLabelOnBoard(board.id, '', null);
+        }).then(function(label) {
+            return trello.addLabelToCard(card.id, label.id);
+        });
+    }
 }
 
 function onCardMoveBetweenBoards(action) {
