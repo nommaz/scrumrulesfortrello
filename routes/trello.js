@@ -56,6 +56,9 @@ router.post('/', function(req, res, next) {
     if (actionType === 'updateCard' && actionData.listAfter) {
         logger.log('onCardMove');
         onCardMove(action);
+    } else if (actionType === 'updateCard' && _.get(actionData, 'old.closed') === false) {
+        logger.log('cardArchived');
+        onCardArchived(action);
     } else if (actionType === 'moveCardFromBoard') {
         logger.log('moveCardFromBoard');
 
@@ -91,12 +94,7 @@ function onCardCreate(action) {
 
             return label || trello.addLabelOnBoard(board.id, '', null);
         }).then(function(label) {
-            if (slackWebhookUrl) {
-                restler.postJson(slackWebhookUrl, {
-                    text: `Card ${ trello.generateCardSlackLink(card) } created in non-backlog list`
-                });
-            }
-
+            sendSlackMessage(`Card ${ trello.generateCardSlackLink(card) } created in list "${ list.name }"`);
             return trello.addLabelToCard(card.id, label.id);
         });
     }
@@ -177,6 +175,27 @@ function onCardMove(action) {
 
             return;
         }
+    }
+}
+
+/**
+ * Listener to card archive action
+ *
+ * @param {Object} action - performed action
+ */
+function onCardArchived(action) {
+    var card = action.data.card;
+    sendSlackMessage(`Card ${ trello.generateCardSlackLink(card) } was archived`);
+}
+
+/**
+ * Sends message to slack
+ *
+ * @param {String} msg - message
+ */
+function sendSlackMessage(msg) {
+    if (slackWebhookUrl) {
+        restler.postJson(slackWebhookUrl, { text: msg });
     }
 }
 
