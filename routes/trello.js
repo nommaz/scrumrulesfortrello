@@ -7,6 +7,7 @@ var express = require('express'),
     trello = require('../utils/trello'),
     config = require('../config'),
     slackWebhookUrl = config.slackWebhookUrl,
+    greenLabelUrlPrefix = config.greenLabelUrlPrefix,
     logger = console,
     todoRe = /^\s*\(([\?\.0-9]+)\)/,
     doingRe = /\[(-?[\.0-9]+)\]\s*$/,
@@ -74,9 +75,11 @@ router.post('/', function(req, res, next) {
         action.data.listAfter = actionData.list;
 
         onCardMoveBetweenBoards(action);
+    } else if (actionType === 'addLabelToCard') {
+        logger.log('addLabelToCard');
+        onAddLabelToCard(action);
     } else if (actionType === 'createCard') {
         logger.log('createCard');
-
         onCardCreate(action);
     }
 
@@ -186,6 +189,25 @@ function onCardMove(action) {
 function onCardArchived(action) {
     var card = action.data.card;
     sendSlackMessage(`Card ${ trello.generateCardSlackLink(card) } was archived`);
+}
+
+/**
+ * Listener to card label addition
+ *
+ * @param {Object} action - performed action
+ */
+function onAddLabelToCard(action) {
+    var board = action.data.board;
+    var card = action.data.card;
+    var label = action.data.label;
+
+    var cardId = encodeURIComponent(card.id),
+        cardTitle = encodeURIComponent(card.name),
+        boardName = encodeURIComponent(board.name);
+
+    if (greenLabelUrlPrefix && label.color === 'green') {
+        restler.get(`${ greenLabelUrlPrefix }&cardId=${ cardId }&cardTitle=${ cardTitle }&boardName=${ boardName }`);
+    }
 }
 
 /**
