@@ -7,8 +7,7 @@ var express = require('express'),
     config = require('../config'),
     logger = console,
     todoRe = /^\s*\(([\?\.0-9]+)\)/,
-    doingRe = /\[(\d+)\]\s*$/,
-    //doingRe = \[([-+]?[0-9]*\.?[0-9]+)\]\s*$,
+    doingRe = /\[(-?[\.0-9]+)\]\s*$/,
     CACHE_TIME = 60000;
 
 router.get('/', function(req, res, next) {
@@ -151,7 +150,7 @@ function onCardMove(action) {
         match = card.name.match(doingRe);
 
         // if card subject doesnt end with '[N]' where N is a number, move it back to the originating list
-        if (!match || parseInt(match[1], 10) < 0) {
+        if (!match || parseFloat(match[1]) < 0) {
             logger.log('moving card back to Doing list');
 
             trello.updateCardFields(cardId, updateFields)
