@@ -201,7 +201,7 @@ function onAddLabelToCard(action) {
     var card = action.data.card;
     var label = action.data.label;
 
-    var cardId = encodeURIComponent(card.id),
+    var cardId = encodeURIComponent(card.shortLink),
         cardTitle = encodeURIComponent(card.name),
         boardName = encodeURIComponent(board.name);
 
